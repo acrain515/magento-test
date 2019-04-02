@@ -316,7 +316,7 @@ class Installer
                 [$request[InstallCommand::INPUT_KEY_SALES_ORDER_INCREMENT_PREFIX]],
             ];
         }
-        if (isset($request['admin-email'])) {
+        if ($this->isAdminDataSet($request)) {
             $script[] = ['Installing admin user...', 'installAdminUser', [$request]];
         }
         $script[] = ['Caches clearing:', 'cleanCaches', []];
@@ -1321,5 +1321,28 @@ class Installer
         foreach ($messages as $message) {
             $this->log->log($message);
         }
+    }
+
+    /**
+     * Checks that admin data is not empty in request array
+     *
+     * @param \ArrayObject|array $request
+     * @return bool
+     */
+    private function isAdminDataSet($request)
+    {
+        $adminData = array_filter($request, function ($value, $key) {
+            return in_array(
+                $key,
+                [
+                    AdminAccount::KEY_EMAIL,
+                    AdminAccount::KEY_FIRST_NAME,
+                    AdminAccount::KEY_LAST_NAME,
+                    AdminAccount::KEY_USER,
+                    AdminAccount::KEY_PASSWORD,
+                ]
+            ) && $value !== null;
+        }, ARRAY_FILTER_USE_BOTH);
+        return !empty($adminData);
     }
 }
